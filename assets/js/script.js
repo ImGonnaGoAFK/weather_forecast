@@ -4,19 +4,6 @@ const resultContentEl= document.querySelector('#result-content');
 const searchInputVal = document.querySelector('#search-input').value;
 const searchBtnEl = document.querySelector('#searchBtn')
 
-
-
-function getParams() {
-    const searchParamsArr = document.location.search.split('&');
-    const query = searchParamsArr[0].split('=').pop();
-    const exclude = searchParamsArr[1].split('=').pop();
-    const api = searchParamsArr[2].split('=').pop();
-
-    console.log(searchParamsArr, query, exclude, api)
-
-    searchApi(query, exclude, api);
-}
-
 function showWeather (weatherObj) {
     console.log(weatherObj);
 
@@ -48,42 +35,7 @@ function showWeather (weatherObj) {
     resultContentEl.append(weatherCard);
 }
 
-function searchApi (query, exclude, api) {
-
-    const apiKey = 'f7ae7c2ad24eafb7ed39958def2a3a06';
-    let weatherQueryUrl =  `api.openweathermap.org/data/2.5/forecast?q=${searchInputVal}&exclude=current,minutely,hourly&appid=${apiKey}`
-
-    console.log(weatherQueryUrl)
-    fetch (weatherQueryUrl)
-    .then (function (response) {
-        if (!response.ok) {
-            throw response.json();
-        }
-
-        return response.json();
-    })
-
-    .then(function(locRes) {
-        resultTextEl.textContent = locRes.search.query;
-
-        if(!locRes.results.length) {
-            console.log('No results found');
-            resultContentEl.innerHTML = '<h3>No results found, search again!</h3>';
-        }
-        else {
-            resultContentEl.textContent = '';
-            for (let i = 0; i < locRes.results.length; i++) {
-                showWeather(locRes.results[i]);
-            }
-        }
-    })
-    .catch(function (error) {
-        console.error(error);
-    })
-}
-
-function handleSearchFormSubmit (event) {
-    event.preventDefault();
+function searchApi () {
 
     const searchInputVal = document.querySelector('#search-input').value;
     const apiKey = 'f7ae7c2ad24eafb7ed39958def2a3a06';
@@ -94,13 +46,56 @@ function handleSearchFormSubmit (event) {
         return;
     }
 
-    const queryString = `./data/2.5/forecast?q=${searchInputVal}&exclude=current,minutely,hourly&appid=${apiKey}`;
+    const queryString = `/data/2.5/forecast?q=${searchInputVal}&exclude=current,minutely,hourly&appid=${apiKey}`;
+    let weatherQueryUrl =  `http://api.openweathermap.org`;
 
-    location.assign(queryString);
-    console.log(searchInputVal);
-    console.log(queryString);
+    weatherQueryUrl = `${weatherQueryUrl}${queryString}`;
+    console.log(weatherQueryUrl);
+    // `https://api.openweathermap.org/data/2.5/forecast?q=${searchInputVal}&exclude=current,minutely,hourly&appid=${apiKey}`
 
-    getParams();
+    console.log(weatherQueryUrl)
+    fetch (weatherQueryUrl)
+    .then (function (response) {
+        if (response.ok) {
+            response.json().then(function (data) {
+                showWeather(data);
+            })
+        }
+    });
+
+    // .then(function(locRes) {
+    //     resultTextEl.textContent = locRes.search.query;
+
+    //     if(!locRes.results.length) {
+    //         console.log('No results found');
+    //         resultContentEl.innerHTML = '<h3>No results found, search again!</h3>';
+    //     }
+    //     else {
+    //         resultContentEl.textContent = '';
+    //         for (let i = 0; i < locRes.results.length; i++) {
+    //             showWeather(locRes.results[i]);
+    //         }
+    //     }
+    // })
+}
+
+function handleSearchFormSubmit (event) {
+    event.preventDefault();
+
+    // const searchInputVal = document.querySelector('#search-input').value;
+    // const apiKey = 'f7ae7c2ad24eafb7ed39958def2a3a06';
+    
+
+    // if (!searchInputVal) {
+    //     console.error('You need a search input!');
+    //     return;
+    // }
+
+    // const queryString = `/data/2.5/forecast?q=${searchInputVal}&exclude=current,minutely,hourly&appid=${apiKey}`;
+
+    searchApi();
+
+    // getParams();
 
 }
 
@@ -111,7 +106,4 @@ searchFormEl.addEventListener('click', handleSearchFormSubmit)
 //     handleSearchFormSubmit();
 // })
 
-getParams();
-
-
-
+// getParams();
