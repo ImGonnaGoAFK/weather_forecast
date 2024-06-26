@@ -3,49 +3,71 @@ const resultTextEl = document.querySelector('#result-text');
 const resultContentEl= document.querySelector('#result-content');
 const searchInputVal = document.querySelector('#search-input').value;
 const searchBtnEl = document.querySelector('#searchBtn')
+const searchHistoryEl = document.querySelector('#search-history')
 
-function showWeather (weatherObj) {
-    console.log(weatherObj);
+let searchHistoryObj = [];
 
-    const weatherCard = document.createElement('div');
-    weatherCard.classList.add('card', 'bg-light', 'text-dark', 'mb-3', 'p-3');
-
-    const weatherBody = document.createElement('div');
-    weatherBody.classList.add('card-body');
-    weatherCard.append(weatherBody);
-
-    const bodyContentEl = document.createElement('p');
-    bodyContentEl.innerHTML +=
-    `<strong>${weatherObj.city}`, ` ` , `${weatherObj.date}</strong> <br/>`
-
-    if (weatherObj.temp) {
-        bodyContentEl.innerHTML +=
-        `Temp: , ${weatherObj.temp} <br/>`;
-    }
-    if (weatherObj.wind) {
-        bodyContentEl.innerHTML +=
-        `Wind: , ${weatherObj.wind} <br/>`;
-    }
-
-    if (weatherObj.humidity) {
-        bodyContentEl.innerHTML +=
-        `Humidity: , ${weatherObj.humidity} <br/>`;
-    }
-    weatherBody.append(bodyContentEl);
-    resultContentEl.append(weatherCard);
+function updateLocalStorage() {
+    localStorage.setItem('weatherHistory', JSON.stringify(searchHistoryObj));
+    return searchHistoryObj;
 }
 
-function searchApi () {
-    const searchInputVal = document.querySelector('#search-input').value;
-    const apiKey = 'f7ae7c2ad24eafb7ed39958def2a3a06';
-    
+// function readLocalStorage() {
+//  let history = JSON.parse(localStorage).getItem('weatherHistory');
+// }
 
-    if (!searchInputVal) {
-        console.error('You need a search input!');
-        return;
+function renderSearchHistory() {
+    searchHistoryEl.innerHTML= '';
+
+    for (let i=0; i < searchHistoryObj.length; i++) {
+        const historyList = document.createElement('li');
+        const historyString = document.createElement('btn');
+
+        historyString.textContent= searchHistoryObj[i];
+
+        historyString.setAttribute('class', 'history-button');
+
+        historyList.appendChild(historyString);
     }
+}
 
-    const queryString = `/data/2.5/forecast?q=${searchInputVal}&units=imperial&cnt=5&exclude=current,minutely,hourly&appid=${apiKey}`;
+// function showWeather (forecastData) {
+//     console.log(forecastData);
+
+//     const weatherCard = document.createElement('div');
+//     weatherCard.classList.add('card', 'bg-light', 'text-dark', 'mb-3', 'p-3');
+
+//     const weatherBody = document.createElement('div');
+//     weatherBody.classList.add('card-body');
+//     weatherCard.append(weatherBody);
+
+//     for (let i=0; i < 5; i++) {
+//     const bodyContentEl = document.createElement('p');
+//     bodyContentEl.innerHTML +=
+//     `<strong>${forecastData.city}`, ` ` , `${forecastData.date}</strong> <br/>`
+    
+//     if (forecastData.temperature) {
+//         bodyContentEl.innerHTML +=
+//         `temperature: , ${forecastData.temperature} <br/>`;
+//     }
+//     if (forecastData.wind) {
+//         bodyContentEl.innerHTML +=
+//         `Wind: , ${forecastData.wind} <br/>`;
+//     }
+
+//     if (forecastData.humidity) {
+//         bodyContentEl.innerHTML +=
+//         `Humidity: , ${forecastData.humidity} <br/>`;
+//     }
+//     weatherBody.append(bodyContentEl);
+//     resultContentEl.append(weatherCard);
+//     }
+// }
+function searchApi (cityName) {
+
+    let weatherAry = [];
+    const apiKey = 'f7ae7c2ad24eafb7ed39958def2a3a06';
+    const queryString = `/data/2.5/forecast?q=${cityName}&units=imperial&exclude=current,minutely,hourly&appid=${apiKey}`;
     let weatherQueryUrl =  `http://api.openweathermap.org`;
 
     weatherQueryUrl = `${weatherQueryUrl}${queryString}`;
@@ -59,48 +81,115 @@ function searchApi () {
     })
 
     .then(function(data) {
-        for (let i=0; i < 5; i++) {
-            console.log(data.list[i].main.temp)
+        console.log(data);
+        for (let i=0; i < data.list.length; i++) {
+            let timeIsNotTwelve = data.list[i].dt_txt.split(" ")[1].split(":")[0] != "12";
+            if(timeIsNotTwelve){
+                continue
+            }
             let weatherInfo = {
+                city: (data.city.name),
                 date: (data.list[i].dt_txt),
                 iconId: (data.list[i].weather[0].id),
                 temperature: (data.list[i].main.temp),
                 wind: (data.list[i].wind.speed),
                 humidity: (data.list[i].main.humidity),
             }
-            console.log(weatherInfo)
-        }
-    });
-    console.log(weatherInfo);
 
-    
+            weatherAry.push(weatherInfo);
+        }
+        
+        updateLocalStorage(weatherAry);
+        renderForecast(weatherAry)
+    });
 }
+
+function renderForecast (forecastData) {
+    console.log("Rendering forecast!!: ", forecastData)
+    let iconUrl = `https://openweathermap.org/img/wn`;
+    let forecastIdEl = `${forecastData[0].iconId}`;
+    let iconIdEl = '11d';
+    if (forecastIdEl >= 200 && forecastIdEl <= 235) {
+        iconIdEl = "11d"
+    }
+    else if (forecastIdEl >= 300 && forecastIdEl <= 321) {
+        iconIdEl = '09d';
+    }
+    else if (forecastIdEl >= 500 && forecastIdEl <= 504) {
+        iconIdEl = '10d';
+    }
+    else if (forecastIdEl === 511) {
+        iconIdEl = '13d';
+    }
+    else if (forecastIdEl >= 520 && forecastIdEl <= 531) {
+        iconIdEl = '09d';
+    }
+    else if (forecastIdEl >= 600 && forecastIdEl <= 622) {
+        iconIdEl = '13d';
+    }
+    else if (forecastIdEl >= 700 && forecastIdEl <= 781) {
+        iconIdEl = '50d';
+    }
+    else if (forecastIdEl === 800) {
+        iconIdEl = '01d';
+    }
+    else if (forecastIdEl === 801) {
+        iconIdEl = '02d';
+    }else if (forecastIdEl === 802) {
+        iconIdEl = '03d';
+    }else if (forecastIdEl === 803) {
+        iconIdEl = '04d';
+    }else if (forecastIdEl === 804) {
+        iconIdEl = '04d';
+    }
+    let iconString = `/${iconIdEl}@2x.png`
+    iconUrl = `${iconUrl}${iconString}`;
+    console.log(iconUrl);
+    const forecastCard = document.createElement('div');
+    forecastCard.classList.add('today-card');
+
+    const forecastBody = document.createElement('div');
+    forecastBody.classList.add('card-body');
+    forecastCard.append(forecastBody);
+
+    const titleCityEl = document.createElement('h3')
+    titleCityEl.textContent = forecastData[0].city;
+    
+    const titleDateEl = document.createElement('h3')
+    titleDateEl.textContent = forecastData[0].date;
+
+    const bodyContentEl = document.createElement('div');
+    bodyContentEl.innerHTML +=
+        `<strong>Temp: </strong>${forecastData[0].temperature}&deg<br/>`;
+    
+    bodyContentEl.innerHTML +=
+        `<img src="${iconUrl}" /> <br/>`;
+
+    bodyContentEl.innerHTML +=
+        `<div>Wind: ${forecastData[0].wind}mph<br/>`;
+
+    bodyContentEl.innerHTML +=
+        `<div>Humidity: ${forecastData[0].humidity}%<br>`;
+    
+    forecastBody.append(titleCityEl, titleDateEl, bodyContentEl);
+    resultContentEl.append(forecastCard);
+
+
+    console.log((forecastData[0].date))
+}
+
+
+
 
 function handleSearchFormSubmit (event) {
     event.preventDefault();
-
-    // const searchInputVal = document.querySelector('#search-input').value;
-    // const apiKey = 'f7ae7c2ad24eafb7ed39958def2a3a06';
-    
-
-    // if (!searchInputVal) {
-    //     console.error('You need a search input!');
-    //     return;
-    // }
-
-    // const queryString = `/data/2.5/forecast?q=${searchInputVal}&exclude=current,minutely,hourly&appid=${apiKey}`;
-
-    searchApi();
-
-    // getParams();
-
+    const searchInputVal = document.querySelector('#search-input').value;
+    if (!searchInputVal) {
+        console.error('You need a search input!');
+        return;
+    }
+    searchHistoryObj.push(searchInputVal);
+    searchApi(searchInputVal);
 }
 
-searchFormEl.addEventListener('click', handleSearchFormSubmit)
-
-// searchBtnEl.addEventListener("click", function () {
-//     event.preventDefault();
-//     handleSearchFormSubmit();
-// })
-
-// getParams();
+searchBtnEl.addEventListener('click', handleSearchFormSubmit);
