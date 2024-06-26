@@ -36,7 +36,6 @@ function showWeather (weatherObj) {
 }
 
 function searchApi () {
-
     const searchInputVal = document.querySelector('#search-input').value;
     const apiKey = 'f7ae7c2ad24eafb7ed39958def2a3a06';
     
@@ -58,33 +57,23 @@ function searchApi () {
     .then (function (response) {
         return response.json();
     })
+
     .then(function(data) {
         for (let i=0; i < 5; i++) {
             console.log(data.list[i].main.temp)
+            let weatherInfo = {
+                date: (data.list[i].dt_txt),
+                iconId: (data.list[i].weather[0].id),
+                temperature: (data.list[i].main.temp),
+                wind: (data.list[i].wind.speed),
+                humidity: (data.list[i].main.humidity),
+            }
+            console.log(weatherInfo)
         }
-    })
+    });
+    console.log(weatherInfo);
 
-        // if (response.ok) {
-        //     response.json().then(function (data) {
-        //         console.log(data);
-        //     })
-        // }
-    ;
-
-    // .then(function(locRes) {
-    //     resultTextEl.textContent = locRes.search.query;
-
-    //     if(!locRes.results.length) {
-    //         console.log('No results found');
-    //         resultContentEl.innerHTML = '<h3>No results found, search again!</h3>';
-    //     }
-    //     else {
-    //         resultContentEl.textContent = '';
-    //         for (let i = 0; i < locRes.results.length; i++) {
-    //             showWeather(locRes.results[i]);
-    //         }
-    //     }
-    // })
+    
 }
 
 function handleSearchFormSubmit (event) {
