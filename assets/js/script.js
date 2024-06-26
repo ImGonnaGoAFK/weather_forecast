@@ -16,7 +16,7 @@ function showWeather (weatherObj) {
 
     const bodyContentEl = document.createElement('p');
     bodyContentEl.innerHTML +=
-    `<strong>${weather.city}`, ` ` , `${weather.date}</strong> <br/>`
+    `<strong>${weatherObj.city}`, ` ` , `${weatherObj.date}</strong> <br/>`
 
     if (weatherObj.temp) {
         bodyContentEl.innerHTML +=
@@ -46,7 +46,7 @@ function searchApi () {
         return;
     }
 
-    const queryString = `/data/2.5/forecast?q=${searchInputVal}&exclude=current,minutely,hourly&appid=${apiKey}`;
+    const queryString = `/data/2.5/forecast?q=${searchInputVal}&units=imperial&cnt=5&exclude=current,minutely,hourly&appid=${apiKey}`;
     let weatherQueryUrl =  `http://api.openweathermap.org`;
 
     weatherQueryUrl = `${weatherQueryUrl}${queryString}`;
@@ -56,12 +56,20 @@ function searchApi () {
     console.log(weatherQueryUrl)
     fetch (weatherQueryUrl)
     .then (function (response) {
-        if (response.ok) {
-            response.json().then(function (data) {
-                showWeather(data);
-            })
+        return response.json();
+    })
+    .then(function(data) {
+        for (let i=0; i < 5; i++) {
+            console.log(data.list[i].main.temp)
         }
-    });
+    })
+
+        // if (response.ok) {
+        //     response.json().then(function (data) {
+        //         console.log(data);
+        //     })
+        // }
+    ;
 
     // .then(function(locRes) {
     //     resultTextEl.textContent = locRes.search.query;
