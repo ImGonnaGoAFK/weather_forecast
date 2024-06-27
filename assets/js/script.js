@@ -36,7 +36,7 @@ function searchApi (cityName) {
     let weatherAry = [];
     const apiKey = 'f7ae7c2ad24eafb7ed39958def2a3a06';
     const queryString = `/data/2.5/forecast?q=${cityName}&units=imperial&exclude=current,minutely,hourly&appid=${apiKey}`;
-    let weatherQueryUrl =  `http://api.openweathermap.org`;
+    let weatherQueryUrl =  `https://api.openweathermap.org`;
 
     weatherQueryUrl = `${weatherQueryUrl}${queryString}`;
     console.log(weatherQueryUrl);
