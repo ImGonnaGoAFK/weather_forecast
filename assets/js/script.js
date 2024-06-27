@@ -31,38 +31,6 @@ function renderSearchHistory() {
     }
 }
 
-// function showWeather (forecastData) {
-//     console.log(forecastData);
-
-//     const weatherCard = document.createElement('div');
-//     weatherCard.classList.add('card', 'bg-light', 'text-dark', 'mb-3', 'p-3');
-
-//     const weatherBody = document.createElement('div');
-//     weatherBody.classList.add('card-body');
-//     weatherCard.append(weatherBody);
-
-//     for (let i=0; i < 5; i++) {
-//     const bodyContentEl = document.createElement('p');
-//     bodyContentEl.innerHTML +=
-//     `<strong>${forecastData.city}`, ` ` , `${forecastData.date}</strong> <br/>`
-    
-//     if (forecastData.temperature) {
-//         bodyContentEl.innerHTML +=
-//         `temperature: , ${forecastData.temperature} <br/>`;
-//     }
-//     if (forecastData.wind) {
-//         bodyContentEl.innerHTML +=
-//         `Wind: , ${forecastData.wind} <br/>`;
-//     }
-
-//     if (forecastData.humidity) {
-//         bodyContentEl.innerHTML +=
-//         `Humidity: , ${forecastData.humidity} <br/>`;
-//     }
-//     weatherBody.append(bodyContentEl);
-//     resultContentEl.append(weatherCard);
-//     }
-// }
 function searchApi (cityName) {
 
     let weatherAry = [];
@@ -105,9 +73,9 @@ function searchApi (cityName) {
 }
 
 function renderForecast (forecastData) {
-    console.log("Rendering forecast!!: ", forecastData)
+    for (let i=0; i< forecastData.length; i++) {
     let iconUrl = `https://openweathermap.org/img/wn`;
-    let forecastIdEl = `${forecastData[0].iconId}`;
+    let forecastIdEl = `${forecastData[i].iconId}`;
     let iconIdEl = '11d';
     if (forecastIdEl >= 200 && forecastIdEl <= 235) {
         iconIdEl = "11d"
@@ -146,33 +114,34 @@ function renderForecast (forecastData) {
     iconUrl = `${iconUrl}${iconString}`;
     console.log(iconUrl);
     const forecastCard = document.createElement('div');
-    forecastCard.classList.add('today-card');
+    forecastCard.classList.add('future');
 
     const forecastBody = document.createElement('div');
     forecastBody.classList.add('card-body');
     forecastCard.append(forecastBody);
 
-    const titleCityEl = document.createElement('h3')
-    titleCityEl.textContent = forecastData[0].city;
-    
-    const titleDateEl = document.createElement('h3')
-    titleDateEl.textContent = forecastData[0].date;
-
     const bodyContentEl = document.createElement('div');
+    bodyContentEl.setAttribute('class', 'future');
     bodyContentEl.innerHTML +=
-        `<strong>Temp: </strong>${forecastData[0].temperature}&deg<br/>`;
+        `<strong>${forecastData[i].date}</strong>`
+    bodyContentEl.innerHTML +=
+        `<strong>Temp: </strong>${forecastData[i].temperature}&deg<br/>`;
     
     bodyContentEl.innerHTML +=
         `<img src="${iconUrl}" /> <br/>`;
 
     bodyContentEl.innerHTML +=
-        `<div>Wind: ${forecastData[0].wind}mph<br/>`;
+        `<div>Wind: ${forecastData[i].wind}mph<br/>`;
 
     bodyContentEl.innerHTML +=
-        `<div>Humidity: ${forecastData[0].humidity}%<br>`;
+        `<div>Humidity: ${forecastData[i].humidity}%<br>`;
     
-    forecastBody.append(titleCityEl, titleDateEl, bodyContentEl);
+    forecastBody.append(bodyContentEl);
     resultContentEl.append(forecastCard);
+}
+    
+    // forecastBody.append(titleCityEl, titleDateEl, bodyContentEl);
+    // resultContentEl.append(forecastCard);
 
 
     console.log((forecastData[0].date))
