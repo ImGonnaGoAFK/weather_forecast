@@ -123,7 +123,9 @@ function renderForecast (forecastData) {
     const bodyContentEl = document.createElement('div');
     bodyContentEl.setAttribute('class', 'future');
     bodyContentEl.innerHTML +=
-        `<strong>${forecastData[i].date}</strong>`
+        `<strong>${forecastData[i].date}</strong>`;
+    bodyContentEl.innerHTML +=
+        `<strong>${forecastData[i].city}</strong>`;
     bodyContentEl.innerHTML +=
         `<strong>Temp: </strong>${forecastData[i].temperature}&deg<br/>`;
     
@@ -131,10 +133,10 @@ function renderForecast (forecastData) {
         `<img src="${iconUrl}" /> <br/>`;
 
     bodyContentEl.innerHTML +=
-        `<div>Wind: ${forecastData[i].wind}mph<br/>`;
+        `<div><strong>Wind: </strong>${forecastData[i].wind}mph<br/>`;
 
     bodyContentEl.innerHTML +=
-        `<div>Humidity: ${forecastData[i].humidity}%<br>`;
+        `<div><strong>Humidity: </strong>${forecastData[i].humidity}%<br>`;
     
     forecastBody.append(bodyContentEl);
     resultContentEl.append(forecastCard);
