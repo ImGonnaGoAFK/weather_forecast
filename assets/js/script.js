@@ -1,166 +1,103 @@
-const searchFormEl = document.querySelector('#search-form');
-const resultTextEl = document.querySelector('#result-text');
-const resultContentEl= document.querySelector('#result-content');
-const searchInputVal = document.querySelector('#search-input').value;
-const searchBtnEl = document.querySelector('#searchBtn')
-const searchHistoryEl = document.querySelector('#search-history')
+const searchFormEl = document.querySelector("#search-form");
+const resultTextEl = document.querySelector("#result-text");
+const resultContentEl = document.querySelector("#result-content");
+const searchInputVal = document.querySelector("#search-input").value;
+const searchBtnEl = document.querySelector("#searchBtn");
+const searchHistoryEl = document.querySelector("#search-history");
 
-let searchHistoryObj = [];
+let searchHistoryObj = JSON.parse(localStorage.getItem("weatherHistory")) || [];
 
 function updateLocalStorage() {
-    localStorage.setItem('weatherHistory', JSON.stringify(searchHistoryObj));
-    return searchHistoryObj;
+  localStorage.setItem("weatherHistory", JSON.stringify(searchHistoryObj));
 }
-
-// function readLocalStorage() {
-//  let history = JSON.parse(localStorage).getItem('weatherHistory');
-// }
 
 function renderSearchHistory() {
-    searchHistoryEl.innerHTML= '';
-
-    for (let i=0; i < searchHistoryObj.length; i++) {
-        const historyList = document.createElement('li');
-        const historyString = document.createElement('btn');
-
-        historyString.textContent= searchHistoryObj[i];
-
-        historyString.setAttribute('class', 'history-button');
-
-        historyList.appendChild(historyString);
-    }
+  searchHistoryEl.innerHTML = "";
+  searchHistoryObj.forEach((city) => {
+    const historyItem = document.createElement("li");
+    const historyBtn = document.createElement("button");
+    historyBtn.textContent = city;
+    historyBtn.classList.add("history-button");
+    historyBtn.onclick = () => searchApi(city);
+    historyItem.appendChild(historyBtn);
+    searchHistoryEl.appendChild(historyItem);
+  });
 }
 
-function searchApi (cityName) {
-
-    let weatherAry = [];
-    const apiKey = 'f7ae7c2ad24eafb7ed39958def2a3a06';
-    const queryString = `/data/2.5/forecast?q=${cityName}&units=imperial&exclude=current,minutely,hourly&appid=${apiKey}`;
-    let weatherQueryUrl =  `https://api.openweathermap.org`;
-
-    weatherQueryUrl = `${weatherQueryUrl}${queryString}`;
-    console.log(weatherQueryUrl);
-    // `https://api.openweathermap.org/data/2.5/forecast?q=${searchInputVal}&exclude=current,minutely,hourly&appid=${apiKey}`
-
-    console.log(weatherQueryUrl)
-    fetch (weatherQueryUrl)
-    .then (function (response) {
-        return response.json();
+function searchApi(cityName) {
+  const apiKey = "f7ae7c2ad24eafb7ed39958def2a3a06";
+  const weatherQueryUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&units=imperial&exclude=current,minutely,hourly&appid=${apiKey}`;
+  fetch(weatherQueryUrl)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.json();
     })
 
-    .then(function(data) {
-        console.log(data);
-        for (let i=0; i < data.list.length; i++) {
-            let timeIsNotTwelve = data.list[i].dt_txt.split(" ")[1].split(":")[0] != "12";
-            if(timeIsNotTwelve){
-                continue
-            }
-            let weatherInfo = {
-                city: (data.city.name),
-                date: (data.list[i].dt_txt),
-                iconId: (data.list[i].weather[0].id),
-                temperature: (data.list[i].main.temp),
-                wind: (data.list[i].wind.speed),
-                humidity: (data.list[i].main.humidity),
-            }
+    .then((data) => {
+      const weatherAry = data.list
+        .filter((item) => item.dt_txt.includes("12:00:00"))
+        .map((item) => ({
+          city: data.city.name,
+          date: item.dt_txt,
+          iconId: item.weather[0].id,
+          temperature: item.main.temp,
+          wind: item.wind.speed,
+          humidity: item.main.humidity,
+        }));
 
-            weatherAry.push(weatherInfo);
-        }
-        
-        updateLocalStorage(weatherAry);
-        renderForecast(weatherAry)
+      updateLocalStorage();
+      renderForecast(weatherAry);
+    })
+    .catch((error) => console.error("Error fetching data:", error));
+}
+
+function renderForecast(forecastData) {
+    resultContentEl.innerHTML = '';
+    forecastData.forEach(data => {
+        const iconUrl = `https://openweathermap.org/img/wn/${determineIcon(data.iconId)}@2x.png`;
+        const forecastCard = document.createElement('div');
+        forecastCard.classList.add('future');
+
+        const forecastBody = document.createElement('div');
+        forecastBody.classList.add('card-body');
+        forecastBody.innerHTML = `
+            <strong>${data.date}</strong><br>
+            <strong>${data.city}</strong><br>
+            <img src="${iconUrl}" /><br>
+            <strong>Temp: </strong>${data.temperature}°F<br>
+            <strong>Wind: </strong>${data.wind}mph<br>
+            <strong>Humidity: </strong>${data.humidity}%
+        `;
+        forecastCard.appendChild(forecastBody);
+        resultContentEl.appendChild(forecastCard);
     });
 }
 
-function renderForecast (forecastData) {
-    for (let i=0; i< forecastData.length; i++) {
-    let iconUrl = `https://openweathermap.org/img/wn`;
-    let forecastIdEl = `${forecastData[i].iconId}`;
-    let iconIdEl = '11d';
-    if (forecastIdEl >= 200 && forecastIdEl <= 235) {
-        iconIdEl = "11d"
-    }
-    else if (forecastIdEl >= 300 && forecastIdEl <= 321) {
-        iconIdEl = '09d';
-    }
-    else if (forecastIdEl >= 500 && forecastIdEl <= 504) {
-        iconIdEl = '10d';
-    }
-    else if (forecastIdEl === 511) {
-        iconIdEl = '13d';
-    }
-    else if (forecastIdEl >= 520 && forecastIdEl <= 531) {
-        iconIdEl = '09d';
-    }
-    else if (forecastIdEl >= 600 && forecastIdEl <= 622) {
-        iconIdEl = '13d';
-    }
-    else if (forecastIdEl >= 700 && forecastIdEl <= 781) {
-        iconIdEl = '50d';
-    }
-    else if (forecastIdEl === 800) {
-        iconIdEl = '01d';
-    }
-    else if (forecastIdEl === 801) {
-        iconIdEl = '02d';
-    }else if (forecastIdEl === 802) {
-        iconIdEl = '03d';
-    }else if (forecastIdEl === 803) {
-        iconIdEl = '04d';
-    }else if (forecastIdEl === 804) {
-        iconIdEl = '04d';
-    }
-    let iconString = `/${iconIdEl}@2x.png`
-    iconUrl = `${iconUrl}${iconString}`;
-    console.log(iconUrl);
-    const forecastCard = document.createElement('div');
-    forecastCard.classList.add('future');
-
-    const forecastBody = document.createElement('div');
-    forecastBody.classList.add('card-body');
-    forecastCard.append(forecastBody);
-
-    const bodyContentEl = document.createElement('div');
-    bodyContentEl.setAttribute('class', 'future');
-    bodyContentEl.innerHTML +=
-        `<strong>${forecastData[i].date}</strong>`;
-    bodyContentEl.innerHTML +=
-        `<strong>${forecastData[i].city}</strong>`;
-    bodyContentEl.innerHTML +=
-        `<strong>Temp: </strong>${forecastData[i].temperature}&deg<br/>`;
-    
-    bodyContentEl.innerHTML +=
-        `<img src="${iconUrl}" /> <br/>`;
-
-    bodyContentEl.innerHTML +=
-        `<div><strong>Wind: </strong>${forecastData[i].wind}mph<br/>`;
-
-    bodyContentEl.innerHTML +=
-        `<div><strong>Humidity: </strong>${forecastData[i].humidity}%<br>`;
-    
-    forecastBody.append(bodyContentEl);
-    resultContentEl.append(forecastCard);
-}
-    
-    // forecastBody.append(titleCityEl, titleDateEl, bodyContentEl);
-    // resultContentEl.append(forecastCard);
-
-
-    console.log((forecastData[0].date))
+function determineIcon(iconId) {
+    if (iconId >= 200 && iconId <= 232) return '11d'; 
+    if (iconId >= 300 && iconId <= 321) return '09d'; 
+    if (iconId >= 500 && iconId <= 531) return '10d'; 
+    if (iconId >= 600 && iconId <= 622) return '13d';
+    if (iconId >= 701 && iconId <= 781) return '50d';
+    if (iconId === 800) return '01d'; 
+    if (iconId >= 801 && iconId <= 804) return (iconId === 801 ? '02d' : '03d' + (iconId === 804 ? '1' : ''));
+    return '01d';
 }
 
-
-
-
-function handleSearchFormSubmit (event) {
+function handleSearchFormSubmit(event) {
     event.preventDefault();
-    const searchInputVal = document.querySelector('#search-input').value;
+    const searchInputVal = document.querySelector('#search-input').value.trim();
     if (!searchInputVal) {
-        console.error('You need a search input!');
+        console.error('You need a search input value!');
         return;
     }
     searchHistoryObj.push(searchInputVal);
+    updateLocalStorage();
+    renderSearchHistory();
     searchApi(searchInputVal);
 }
 
 searchBtnEl.addEventListener('click', handleSearchFormSubmit);
+renderSearchHistory();
